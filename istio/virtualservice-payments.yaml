@@ -1,0 +1,25 @@
+###############################################################
+# ROUTING FOR PAYMENTS SERVICE
+###############################################################
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: payments-vs
+spec:
+  hosts:
+  - payments
+  gateways:
+  - ecommerce-gateway
+
+  http:
+  - match:
+    - uri:
+        prefix: "/api/payments"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: payments
+        port:
+          number: 5003

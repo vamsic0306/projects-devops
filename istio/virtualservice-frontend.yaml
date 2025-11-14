@@ -1,0 +1,24 @@
+###############################################################
+# FRONTEND ROUTING
+# All external traffic goes to React frontend service
+###############################################################
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: frontend-vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - ecommerce-gateway
+
+  http:
+  - match:
+    - uri:
+        prefix: "/"          # All traffic to frontend
+    route:
+    - destination:
+        host: frontend
+        port:
+          number: 3000

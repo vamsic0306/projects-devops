@@ -1,0 +1,36 @@
+{
+  "title": "Node Exporter Metrics",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Node CPU %",
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Node Memory %",
+      "targets": [
+        {
+          "expr": "100 - ((node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100)",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Disk Usage %",
+      "targets": [
+        {
+          "expr": "(node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100",
+          "legendFormat": "{{instance}} / {{mountpoint}}"
+        }
+      ]
+    }
+  ]
+}

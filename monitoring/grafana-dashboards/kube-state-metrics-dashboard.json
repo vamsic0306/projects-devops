@@ -1,0 +1,40 @@
+{
+  "title": "Kubernetes State Metrics",
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Pods by Phase",
+      "targets": [
+        {
+          "expr": "sum(kube_pod_status_phase) by (phase)",
+          "legendFormat": "{{phase}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Deployments Desired vs Available",
+      "targets": [
+        {
+          "expr": "sum(kube_deployment_spec_replicas)",
+          "legendFormat": "Desired"
+        },
+        {
+          "expr": "sum(kube_deployment_status_replicas_available)",
+          "legendFormat": "Available"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Node Ready Status",
+      "targets": [
+        {
+          "expr": "sum(kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+          "legendFormat": "Ready"
+        }
+      ]
+    }
+  ]
+}

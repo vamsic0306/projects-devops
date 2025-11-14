@@ -1,0 +1,64 @@
+{
+  "title": "RDS PostgreSQL Dashboard",
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "DB CPU Usage",
+      "targets": [
+        {
+          "expr": "avg(rate(node_cpu_seconds_total{instance=~\"rds.*\",mode!=\"idle\"}[5m]))",
+          "legendFormat": "CPU"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Database Connections",
+      "targets": [
+        {
+          "expr": "postgresql_global_connections",
+          "legendFormat": "connections"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Transactions Per Second",
+      "targets": [
+        {
+          "expr": "rate(postgresql_xact_commit_total[1m])",
+          "legendFormat": "commits"
+        },
+        {
+          "expr": "rate(postgresql_xact_rollback_total[1m])",
+          "legendFormat": "rollbacks"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Read/Write IOPS",
+      "targets": [
+        {
+          "expr": "rate(node_disk_reads_completed_total{instance=~\"rds.*\"}[5m])",
+          "legendFormat": "reads"
+        },
+        {
+          "expr": "rate(node_disk_writes_completed_total{instance=~\"rds.*\"}[5m])",
+          "legendFormat": "writes"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Slow Queries",
+      "targets": [
+        {
+          "expr": "rate(postgresql_pg_stat_statements_total_time[5m])",
+          "legendFormat": "slow queries"
+        }
+      ]
+    }
+  ]
+}

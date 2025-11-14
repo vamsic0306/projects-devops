@@ -1,0 +1,26 @@
+{
+  "title": "Istio Sidecar Proxy Dashboard",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Sidecar CPU",
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{container=\"istio-proxy\"}[1m])",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Sidecar Memory",
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{container=\"istio-proxy\"}",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    }
+  ]
+}

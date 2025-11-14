@@ -1,0 +1,85 @@
+###############################################################
+# PAYMENTS DEPLOYMENT
+###############################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: payments
+
+  template:
+    metadata:
+      labels:
+        app: payments
+
+    spec:
+      containers:
+      - name: payments
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+        ports:
+        - containerPort: 5003
+
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: payments-secret
+              key: DB_HOST
+
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: payments-secret
+              key: DB_NAME
+
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: payments-secret
+              key: DB_USER
+
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: payments-secret
+              key: DB_PASSWORD
+
+        - name: USERS_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: payments-config
+              key: USERS_SERVICE_URL
+
+        - name: ORDERS_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: payments-config
+              key: ORDERS_SERVICE_URL
+
+        ###################################
+        # PROBES
+        ###################################
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5003
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5003
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        resources:
+{{ toYaml .Values.resources | indent 10 }}

@@ -1,0 +1,42 @@
+###############################################################
+# PROMETHEUS + GRAFANA CONFIGURATION
+###############################################################
+
+grafana:
+  enabled: true
+
+  adminPassword: "admin"
+
+  service:
+    type: LoadBalancer
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'ecommerce'
+        orgId: 1
+        folder: 'Ecommerce'
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards/ecommerce
+
+  dashboards:
+    ecommerce:
+      users-dashboard:
+        json: |
+          {{- toJson (fromJson (.Files.Get "grafana-dashboards/users-dashboard.json")) | nindent 10 }}
+      orders-dashboard:
+        json: |
+          {{- toJson (fromJson (.Files.Get "grafana-dashboards/orders-dashboard.json")) | nindent 10 }}
+      payments-dashboard:
+        json: |
+          {{- toJson (fromJson (.Files.Get "grafana-dashboards/payments-dashboard.json")) | nindent 10 }}
+
+prometheus:
+  prometheusSpec:
+    scrapeInterval: "15s"
+
+    serviceMonitorSelector:
+      matchLabels:
+        release: "ecommerce-monitoring"

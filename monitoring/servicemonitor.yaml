@@ -1,0 +1,54 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ecommerce-servicemonitor
+  labels:
+    release: "ecommerce-monitoring"
+spec:
+  selector:
+    matchLabels:
+      app: users
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+    - port: http
+      interval: 15s
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: orders-servicemonitor
+  labels:
+    release: "ecommerce-monitoring"
+spec:
+  selector:
+    matchLabels:
+      app: orders
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+    - port: http
+      interval: 15s
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-servicemonitor
+  labels:
+    release: "ecommerce-monitoring"
+spec:
+  selector:
+    matchLabels:
+      app: payments
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+    - port: http
+      interval: 15s

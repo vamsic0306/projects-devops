@@ -1,0 +1,27 @@
+###############################################################
+# DESTINATION RULES FOR ALL SERVICES
+# Apply mTLS, load balancing, retries
+###############################################################
+
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: ecommerce-dr
+spec:
+  host: "*.default.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL        # mTLS enabled
+
+    loadBalancer:
+      simple: ROUND_ROBIN
+
+    connectionPool:
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 50
+
+    outlierDetection:
+      consecutiveErrors: 3
+      interval: 5s
+      baseEjectionTime: 15s

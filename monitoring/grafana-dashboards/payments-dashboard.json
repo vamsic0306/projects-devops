@@ -1,0 +1,74 @@
+{
+  "title": "Payments Service Dashboard",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Payments Processed Per Second",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{app=\"payments\",handler=\"pay\"}[1m])",
+          "legendFormat": "Payments RPS"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Payment Success vs Failed Requests",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{app=\"payments\",status=~\"2..\"}[5m])",
+          "legendFormat": "Successful Payments"
+        },
+        {
+          "expr": "rate(http_requests_total{app=\"payments\",status=~\"4..\"}[5m])",
+          "legendFormat": "4xx Errors"
+        },
+        {
+          "expr": "rate(http_requests_total{app=\"payments\",status=~\"5..\"}[5m])",
+          "legendFormat": "5xx Errors"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Payments Latency (p95)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app=\"payments\"}[5m])) by (le))",
+          "legendFormat": "p95 latency"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Payments Amount Trends",
+      "targets": [
+        {
+          "expr": "sum(rate(payment_amount_total{app=\"payments\"}[1m]))",
+          "legendFormat": "Total Amount/min"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Payments Service CPU Usage",
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{pod=~\"payments.*\"}[2m])",
+          "legendFormat": "CPU"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Payments Service Memory Usage",
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{pod=~\"payments.*\"}",
+          "legendFormat": "Memory"
+        }
+      ]
+    }
+  ]
+}

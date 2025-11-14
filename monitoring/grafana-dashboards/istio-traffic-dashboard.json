@@ -1,0 +1,68 @@
+{
+  "title": "Istio Traffic Dashboard",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Requests Per Second (All Services)",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total[1m])) by (destination_workload)",
+          "legendFormat": "{{destination_workload}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Latency (p50, p90, p99)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket[5m])) by (le, destination_workload))",
+          "legendFormat": "p50-{{destination_workload}}"
+        },
+        {
+          "expr": "histogram_quantile(0.90, sum(rate(istio_request_duration_milliseconds_bucket[5m])) by (le, destination_workload))",
+          "legendFormat": "p90-{{destination_workload}}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket[5m])) by (le, destination_workload))",
+          "legendFormat": "p99-{{destination_workload}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Error Rates (4xx / 5xx)",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total{response_code=~\"4..\"}[5m])) by (destination_workload)",
+          "legendFormat": "{{destination_workload}} 4xx"
+        },
+        {
+          "expr": "sum(rate(istio_requests_total{response_code=~\"5..\"}[5m])) by (destination_workload)",
+          "legendFormat": "{{destination_workload}} 5xx"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Ingress Gateway Traffic",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total{reporter=\"destination\", destination_workload=\"istio-ingressgateway\"}[1m]))",
+          "legendFormat": "Ingress RPS"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "mTLS Handshakes",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_authentication_handshakes_total[5m]))",
+          "legendFormat": "mTLS handshakes"
+        }
+      ]
+    }
+  ]
+}

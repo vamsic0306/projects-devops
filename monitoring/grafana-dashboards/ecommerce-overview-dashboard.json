@@ -1,0 +1,50 @@
+{
+  "title": "Ecommerce Overview Dashboard",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Total RPS (All Services)",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total[1m])) by (destination_workload)",
+          "legendFormat": "{{destination_workload}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Error Rate (4xx + 5xx)",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total{response_code=~\"4..\"}[1m]))",
+          "legendFormat": "4xx"
+        },
+        {
+          "expr": "sum(rate(istio_requests_total{response_code=~\"5..\"}[1m]))",
+          "legendFormat": "5xx"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Orders Created per Second",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{app=\"orders\",handler=\"create_order\"}[1m])",
+          "legendFormat": "orders RPS"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Payments per Second",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{app=\"payments\",handler=\"pay\"}[1m])",
+          "legendFormat": "payments RPS"
+        }
+      ]
+    }
+  ]
+}

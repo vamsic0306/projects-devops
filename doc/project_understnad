@@ -1,0 +1,137 @@
+⭐ THE CORRECT ORDER TO UNDERSTAND THE PROJECT
+🟦 STEP 1 — Start with Terraform (Infrastructure Layer)
+terraform/
+Here you understand:
+VPC
+Subnets
+EKS
+RDS
+ECR
+IAM roles
+Outputs (endpoints)
+
+Why start here?
+Because everything above (ArgoCD, K8s, Istio, Jenkins) depends on this infra.
+
+🟦 STEP 2 — Helm Charts (Application Deployment Logic)
+helm-charts/
+Each service has its Helm chart:
+
+    helm-charts/users/
+    helm-charts/orders/
+    helm-charts/payments/
+    helm-charts/frontend/
+
+    Here you understand:
+    Kubernetes Deployment
+        Service
+        ConfigMap
+        Secret
+        HPA
+        Env variables
+        Docker image location
+        DB connection details
+
+Why next?
+Because ArgoCD uses these Helm charts to deploy to EKS.
+
+
+🟦 STEP 3 — Microservices (Application Code)
+
+services/
+    users/
+    orders/
+    payments/
+
+Here you understand:
+
+API endpoints
+How each service interacts with DB
+How they talk to each other
+Emit metrics for Prometheus
+Logging
+
+Why now?
+Because you need to see what the code expects from Kubernetes (ports, secrets, env).
+
+
+🟦 STEP 4 — Istio (Traffic Management Layer)
+
+istio/
+
+Study these files:
+gateway.yaml
+virtualservice-users.yaml
+virtualservice-orders.yaml
+virtualservice-payments.yaml
+destination-rules.yaml
+
+Understand:
+How external traffic enters cluster
+How requests reach the correct microservice
+How path-based routing works
+How mTLS works
+How retries/circuit-breaking works
+
+Why now?
+Because Istio routes all traffic, so it sits above services.
+
+🟦 STEP 5 — ArgoCD (GitOps Layer)
+
+argocd/
+    app-of-apps.yaml
+    apps/
+        frontend.yaml
+        users.yaml
+        orders.yaml
+        payments.yaml
+
+Here you understand:
+How Git changes deploy automatically
+How Helm charts are pulled by Argo
+Which namespace services deploy to
+
+Why now?
+Because this connects GitHub → Kubernetes.
+
+🟦 STEP 6 — Jenkins (CI Layer)
+
+jenkins/Jenkinsfile
+
+Understand:
+Docker build
+Docker push to ECR
+Updating Helm chart image tags
+Triggering GitOps deployment
+
+Why now?
+Because Jenkins is CI, ArgoCD is CD — they work together.
+
+🟦 STEP 7 — Monitoring (Observability Layer)
+
+monitoring/
+    prometheus-values.yaml
+    servicemonitor.yaml
+    grafana-dashboards/
+    alertmanager/
+
+Understand:
+How metrics are scraped
+How dashboards are loaded
+How alerts fire
+How ServiceMonitor discovers services
+
+Why last?
+Because observability is built after everything is deployed.
+
+⭐ SO THE BEST STUDY ORDER:
+
+1️⃣ terraform/
+2️⃣ helm-charts/
+3️⃣ services/
+4️⃣ istio/
+5️⃣ argocd/
+6️⃣ jenkins/
+7️⃣ monitoring/
+
+This is EXACTLY how a real devops engineer thinks.

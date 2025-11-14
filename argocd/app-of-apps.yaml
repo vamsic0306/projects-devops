@@ -1,0 +1,29 @@
+
+################################################################
+# ARGOCD APP OF APPS (ROOT)
+# This manages ALL microservices + frontend using GitOps
+################################################################
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ecommerce-root
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: "https://github.com/<YOUR_GITHUB_USERNAME>/ecommerce-devops-project.git"
+    targetRevision: main
+    path: argocd/apps
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+    automated:
+      prune: true    # remove old resources
+      selfHeal: true # auto-fix drift
+    syncOptions:
+    - CreateNamespace=true

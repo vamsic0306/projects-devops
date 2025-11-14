@@ -1,0 +1,57 @@
+groups:
+- name: kubernetes-alerts
+  rules:
+
+  - alert: HighNodeCPU
+    expr: avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) > 0.85
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU on nodes"
+      description: "CPU usage is > 85% for 2 minutes."
+
+  - alert: HighNodeMemory
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High memory usage"
+      description: "Node memory > 85%."
+
+  - alert: PodRestartTooMany
+    expr: increase(kube_pod_container_status_restarts_total[10m]) > 3
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Pod restarting too often"
+      description: "Pod restarting more than 3 times in 10 minutes."
+
+  - alert: Service5xxErrors
+    expr: sum(rate(istio_requests_total{response_code=~"5.."}[1m])) > 5
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "High rate of 5xx"
+      description: "Service is returning >5 5xx errors/sec."
+
+  - alert: RDSInstanceDown
+    expr: aws_rds_status{status!="available"} == 1
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "RDS instance down"
+      description: "PostgreSQL RDS is not in available state."
+
+  - alert: HighLatencyIstio
+    expr: histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket[5m])) by (le)) > 500
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High request latency"
+      description: "99th percentile latency > 500ms."

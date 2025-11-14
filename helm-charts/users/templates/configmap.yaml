@@ -1,0 +1,10 @@
+######################################################
+# CONFIGMAP for external service URLs
+######################################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-config
+data:
+  SERVICE_NAME: "users-service"

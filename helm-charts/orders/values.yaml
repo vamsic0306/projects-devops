@@ -1,0 +1,37 @@
+###########################################################
+# ORDERS SERVICE VALUES
+###########################################################
+
+replicaCount: 2
+
+image:
+  repository: "<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/ecommerce-orders"
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 5002
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+db:
+  host: "<orders_db_endpoint_from_terraform>"
+  name: "ordersdb"
+  user: "orders_admin"
+  password: "OrdersDB@12345"
+
+env:
+  USERS_SERVICE_URL: "http://users:5001"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 60

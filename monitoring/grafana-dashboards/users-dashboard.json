@@ -1,0 +1,26 @@
+{
+  "title": "Users Service Dashboard",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Requests Per Second",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{app=\"users\"}[1m])",
+          "legendFormat": "RPS"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Latency",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app=\"users\"}[5m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ]
+    }
+  ]
+}

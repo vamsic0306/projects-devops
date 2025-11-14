@@ -1,0 +1,38 @@
+###########################################################
+# PAYMENTS SERVICE VALUES
+###########################################################
+
+replicaCount: 2
+
+image:
+  repository: "<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/ecommerce-payments"
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 5003
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+db:
+  host: "<payments_db_endpoint_from_terraform>"
+  name: "paymentsdb"
+  user: "payments_admin"
+  password: "PaymentsDB@12345"
+
+env:
+  USERS_SERVICE_URL: "http://users:5001"
+  ORDERS_SERVICE_URL: "http://orders:5002"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 60

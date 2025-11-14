@@ -1,0 +1,25 @@
+###############################################################
+# ROUTING FOR ORDERS SERVICE
+###############################################################
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: orders-vs
+spec:
+  hosts:
+  - orders
+  gateways:
+  - ecommerce-gateway
+
+  http:
+  - match:
+    - uri:
+        prefix: "/api/orders"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: orders
+        port:
+          number: 5002

@@ -1,0 +1,140 @@
+terraform/
+│
+├── provider.tf       ← AWS provider, region
+├── vpc.tf            ← VPC, subnets, NAT, IGW
+├── eks.tf            ← EKS cluster + node groups
+├── ecr.tf            ← Repositories for frontend, users, orders, payments
+├── rds.tf            ← users-db, orders-db, payments-db
+├── variables.tf      ← variables for region, instance types, etc.
+├── outputs.tf        ← output cluster endpoint, DB endpoints, etc.
+└── versions.tf       ← terraform & provider versions
+
+🟦 1️⃣ HELM CHARTS STRUCTURE (Deployment layer)
+helm-charts/
+│
+├── frontend/                 ← React frontend deployment
+│   ├── Chart.yaml            ← Chart metadata
+│   ├── values.yaml           ← Image + configs + env vars
+│   └── templates/
+│       ├── deployment.yaml   ← Deploys frontend pods
+│       ├── service.yaml      ← Exposes port 3000
+│       ├── configmap.yaml    ← Frontend configs
+│       └── ingress.yaml(optional)
+│
+├── users/                    ← Users microservice chart
+│   ├── Chart.yaml
+│   ├── values.yaml           ← DB host, image repo, secret values
+│   └── templates/
+│       ├── deployment.yaml
+│       ├── service.yaml
+│       ├── secret.yaml       ← DB credentials, JWT secret
+│       ├── configmap.yaml
+│       └── hpa.yaml          ← autoscaling
+│
+├── orders/                   ← Orders microservice
+│   ├── Chart.yaml
+│   ├── values.yaml
+│   └── templates/
+│       ├── deployment.yaml
+│       ├── service.yaml
+│       ├── secret.yaml
+│       ├── configmap.yaml
+│       └── hpa.yaml
+│
+└── payments/                 ← Payments microservice
+    ├── Chart.yaml
+    ├── values.yaml
+    └── templates/
+        ├── deployment.yaml
+        ├── service.yaml
+        ├── secret.yaml
+        ├── configmap.yaml
+        └── hpa.yaml
+
+🟦 2️⃣ MICROSERVICES STRUCTURE (Application layer)
+services/
+│
+├── users/                     ← Users service (Python)
+│   ├── app.py                 ← Main application
+│   ├── requirements.txt       ← Python dependencies
+│   └── Dockerfile             ← Builds the users service image
+│
+├── orders/                    ← Orders service
+│   ├── app.py
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+└── payments/                  ← Payments service
+    ├── app.py
+    ├── requirements.txt
+    └── Dockerfile
+
+
+🟦 3️⃣ REACT FRONTEND STRUCTURE
+frontend/
+│
+├── src/                       ← React source code
+│   ├── App.jsx
+│   ├── main.jsx
+│   ├── pages/                 ← Login/Register/Orders pages
+│   └── components/            ← Reusable UI components
+│
+├── public/                    ← Public static assets
+│
+├── package.json               ← Dependencies + scripts
+└── Dockerfile                 ← Builds production frontend image
+
+
+🟦 4️⃣ ISTIO STRUCTURE (Service Mesh)
+istio/
+│
+├── gateway.yaml               ← Entry point for all traffic
+├── virtualservice-frontend.yaml
+├── virtualservice-users.yaml
+├── virtualservice-orders.yaml
+├── virtualservice-payments.yaml
+└── destination-rules.yaml     ← Traffic rules, mTLS, LB
+
+
+🟦 5️⃣ ARGOCD GitOps STRUCTURE
+argocd/
+│
+├── app-of-apps.yaml           ← Deploys ALL applications at once
+│
+└── apps/                      ← Individual ArgoCD apps
+    ├── frontend.yaml          ← Deploys frontend helm chart
+    ├── users.yaml
+    ├── orders.yaml
+    └── payments.yaml
+
+
+🟦 6️⃣ MONITORING STRUCTURE (Prometheus + Grafana + Alerts)
+monitoring/
+│
+├── prometheus-values.yaml     ← Prometheus & Grafana configuration
+├── servicemonitor.yaml        ← Scrapes metrics from services
+│
+├── grafana-dashboards/        ← All dashboards auto-imported
+│   ├── users-dashboard.json
+│   ├── orders-dashboard.json
+│   ├── payments-dashboard.json
+│   ├── node-level-dashboard.json
+│   ├── node-exporter-dashboard.json
+│   ├── kube-state-metrics-dashboard.json
+│   ├── istio-traffic-dashboard.json
+│   ├── istio-sidecar-dashboard.json
+│   ├── istio-gateway-dashboard.json
+│   ├── istio-service-dashboard.json
+│   ├── rds-dashboard.json
+│   ├── home-dashboard.json
+│   └── ecommerce-overview-dashboard.json
+│
+└── alertmanager/
+    └── alert-rules.yaml       ← CPU alerts, latency alerts, DB down alerts
+
+
+🟦 7️⃣ JENKINS STRUCTURE (CI Pipeline)
+jenkins/
+│
+└── Jenkinsfile                ← Build, push, update Helm, GitOps trigger
+

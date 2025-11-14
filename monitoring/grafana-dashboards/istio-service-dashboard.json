@@ -1,0 +1,16 @@
+{
+  "title": "Istio Service-to-Service Traffic",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Upstream RPS per Service",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total[1m])) by (destination_workload)",
+          "legendFormat": "{{destination_workload}}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Istio Ingress Gateway Dashboard",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Requests Per Second (Gateway)",
+      "targets": [
+        {
+          "expr": "sum(rate(istio_requests_total{destination_workload=\"istio-ingressgateway\"}[1m]))",
+          "legendFormat": "RPS"
+        }
+      ]
+    }
+  ]
+}

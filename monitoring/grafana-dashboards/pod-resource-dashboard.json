@@ -1,0 +1,46 @@
+{
+  "title": "Pod Resource Usage Dashboard",
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Pod CPU Usage",
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{image!=\"\",container!=\"POD\"}[2m])",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Pod Memory Usage",
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{image!=\"\",container!=\"POD\"}",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Pod Restarts",
+      "targets": [
+        {
+          "expr": "kube_pod_container_status_restarts_total",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Running Pod Count",
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{phase=\"Running\"})",
+          "legendFormat": "Running Pods"
+        }
+      ]
+    }
+  ]
+}

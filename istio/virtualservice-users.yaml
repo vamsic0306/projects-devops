@@ -1,0 +1,28 @@
+###############################################################
+# ROUTING FOR USERS SERVICE
+# Requests coming from frontend like:
+#   /api/users/*
+# are routed to the users microservice
+###############################################################
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: users-vs
+spec:
+  hosts:
+  - users
+  gateways:
+  - ecommerce-gateway
+
+  http:
+  - match:
+    - uri:
+        prefix: "/api/users"
+    rewrite:
+      uri: "/"   # forward to / inside pod
+    route:
+    - destination:
+        host: users
+        port:
+          number: 5001

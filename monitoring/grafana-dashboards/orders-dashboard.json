@@ -1,0 +1,70 @@
+{
+  "title": "Orders Service Dashboard",
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Orders Created Per Second (RPS)",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{app=\"orders\",handler=\"create_order\"}[1m])",
+          "legendFormat": "Create Order RPS"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Total Orders API Requests",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{app=\"orders\"}[5m])) by (method)",
+          "legendFormat": "{{method}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Orders Service Latency (p95)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app=\"orders\"}[5m])) by (le))",
+          "legendFormat": "p95 latency"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Failed Order Requests (4xx / 5xx)",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{app=\"orders\",status=~\"4..\"}[5m])",
+          "legendFormat": "4xx Errors"
+        },
+        {
+          "expr": "rate(http_requests_total{app=\"orders\",status=~\"5..\"}[5m])",
+          "legendFormat": "5xx Errors"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Orders Service CPU Usage",
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{pod=~\"orders.*\"}[2m])",
+          "legendFormat": "CPU"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Orders Service Memory Usage",
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{pod=~\"orders.*\"}",
+          "legendFormat": "Memory"
+        }
+      ]
+    }
+  ]
+}

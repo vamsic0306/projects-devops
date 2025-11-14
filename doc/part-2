@@ -1,0 +1,403 @@
+⭐ PART 2 — HOW TO FIND DEPENDENCIES
+
+Great question, Vamsi — this is where **most DevOps learners get confused**, but I’ll make it **SUPER CLEAR**, so you know:
+
+✔ Which folder to read first
+✔ What depends on what
+✔ How to follow the flow step-by-step
+✔ How to understand the entire system quickly
+✔ What each manifest looks for
+✔ How services connect & communicate
+
+This will make you understand ANY real-world DevOps project structure.
+
+---
+
+# ⭐ **THE CORRECT ORDER TO UNDERSTAND THE PROJECT**
+
+You must NOT open everything randomly.
+Follow this exact order:
+
+---
+
+# 🟦 **STEP 1 — Start with Terraform (Infrastructure Layer)**
+
+📁 Folder:
+
+```
+terraform/
+```
+
+### Here you understand:
+
+* VPC
+* Subnets
+* EKS
+* RDS
+* ECR
+* IAM roles
+* Outputs (endpoints)
+
+### Why start here?
+
+Because **everything above (ArgoCD, K8s, Istio, Jenkins)** depends on this infra.
+
+---
+
+# 🟦 **STEP 2 — Helm Charts (Application Deployment Logic)**
+
+📁 Folder:
+
+```
+helm-charts/
+```
+
+Each service has its Helm chart:
+
+```
+helm-charts/users/
+helm-charts/orders/
+helm-charts/payments/
+helm-charts/frontend/
+```
+
+### Here you understand:
+
+* Kubernetes Deployment
+* Service
+* ConfigMap
+* Secret
+* HPA
+* Env variables
+* Docker image location
+* DB connection details
+
+### Why next?
+
+Because **ArgoCD uses these Helm charts to deploy to EKS**.
+
+---
+
+# 🟦 **STEP 3 — Microservices (Application Code)**
+
+📁 Folder:
+
+```
+services/
+    users/
+    orders/
+    payments/
+```
+
+### Here you understand:
+
+* API endpoints
+* How each service interacts with DB
+* How they talk to each other
+* Emit metrics for Prometheus
+* Logging
+
+### Why now?
+
+Because you need to see **what the code expects from Kubernetes** (ports, secrets, env).
+
+---
+
+# 🟦 **STEP 4 — Istio (Traffic Management Layer)**
+
+📁 Folder:
+
+```
+istio/
+```
+
+### Study these files:
+
+* `gateway.yaml`
+* `virtualservice-users.yaml`
+* `virtualservice-orders.yaml`
+* `virtualservice-payments.yaml`
+* `destination-rules.yaml`
+
+### Understand:
+
+* How external traffic enters cluster
+* How requests reach the correct microservice
+* How path-based routing works
+* How mTLS works
+* How retries/circuit-breaking works
+
+### Why now?
+
+Because **Istio routes all traffic**, so it sits above services.
+
+---
+
+# 🟦 **STEP 5 — ArgoCD (GitOps Layer)**
+
+📁 Folder:
+
+```
+argocd/
+    app-of-apps.yaml
+    apps/
+        frontend.yaml
+        users.yaml
+        orders.yaml
+        payments.yaml
+```
+
+### Here you understand:
+
+* How Git changes deploy automatically
+* How Helm charts are pulled by Argo
+* Which namespace services deploy to
+
+### Why now?
+
+Because this connects GitHub → Kubernetes.
+
+---
+
+# 🟦 **STEP 6 — Jenkins (CI Layer)**
+
+📁 Folder:
+
+```
+jenkins/Jenkinsfile
+```
+
+### Understand:
+
+* Docker build
+* Docker push to ECR
+* Updating Helm chart image tags
+* Triggering GitOps deployment
+
+### Why now?
+
+Because Jenkins is CI, ArgoCD is CD — they work together.
+
+---
+
+# 🟦 **STEP 7 — Monitoring (Observability Layer)**
+
+📁 Folder:
+
+```
+monitoring/
+    prometheus-values.yaml
+    servicemonitor.yaml
+    grafana-dashboards/
+    alertmanager/
+```
+
+### Understand:
+
+* How metrics are scraped
+* How dashboards are loaded
+* How alerts fire
+* How ServiceMonitor discovers services
+
+### Why last?
+
+Because observability is built **after** everything is deployed.
+
+---
+
+# ⭐ SO THE BEST STUDY ORDER:
+
+1️⃣ terraform/
+2️⃣ helm-charts/
+3️⃣ services/
+4️⃣ istio/
+5️⃣ argocd/
+6️⃣ jenkins/
+7️⃣ monitoring/
+
+This is EXACTLY how a real devops engineer thinks.
+
+---
+
+# ⭐ PART 2 — HOW TO FIND DEPENDENCIES
+
+This is the **core skill**. Here is the dependency chain:
+
+---
+
+# 🔥 **1) Deployment → Needs Docker Image from ECR**
+
+Check in:
+
+```
+helm-charts/<service>/values.yaml
+```
+
+Find:
+
+```
+image.repository:
+image.tag:
+```
+
+That must match ECR repo created by Terraform + pushed by Jenkins.
+
+---
+
+# 🔥 **2) Deployment → Needs Secrets**
+
+Check:
+
+```
+helm-charts/<service>/templates/secret.yaml
+```
+
+The app expects env vars:
+
+```
+DB_HOST
+DB_USER
+JWT_SECRET
+```
+
+Which your microservice code must read.
+
+---
+
+# 🔥 **3) Service → Needs Deployment labels**
+
+In service.yaml:
+
+```
+selector:
+  app: users
+```
+
+Must match deployment:
+
+```
+labels:
+  app: users
+```
+
+If mismatch = Service won’t find Pod.
+
+---
+
+# 🔥 **4) VirtualService → Needs Service name**
+
+Istio VirtualService:
+
+```
+host: users
+```
+
+Must match Kubernetes Service:
+
+```
+metadata:
+  name: users
+```
+
+Otherwise traffic breaks.
+
+---
+
+# 🔥 **5) ServiceMonitor → Needs named port "http"**
+
+Your service.yaml **must have this**:
+
+```
+ports:
+- name: http
+  port: 5001
+```
+
+If missing → Prometheus won’t scrape metrics.
+
+---
+
+# 🔥 **6) ArgoCD → Needs correct repo + path**
+
+Each ArgoCD app must point to:
+
+```
+path: helm-charts/users
+repoURL: <your GitHub repo>
+```
+
+If path wrong → ArgoCD deploys nothing.
+
+---
+
+# 🔥 **7) Jenkins → Needs ECR URL + repo**
+
+In Jenkinsfile:
+
+```
+ECR_URL = "<AWS_ID>.dkr.ecr.ap-south-1.amazonaws.com"
+docker build
+docker push
+```
+
+If ECR repo missing → build fails.
+
+---
+
+# 🔥 **8) Microservices → Need DB endpoint**
+
+Replace in values.yaml:
+
+```
+db.host: <RDS_ENDPOINT>
+```
+
+If wrong → service cannot connect.
+
+---
+
+# ⭐ PART 3 — FULL CHAIN OF DEPENDENCY (Most Important)**
+
+Here is the COMPLETE dependency graph in human language:
+
+```
+Terraform creates:
+    EKS, RDS, ECR, VPC
+        ↓
+Services need values.yaml DB endpoint → from Terraform output
+        ↓
+Services need docker images → built by Jenkins → pushed to ECR
+        ↓
+Helm chart needs image tag → updated by Jenkins
+        ↓
+ArgoCD watches GitHub → applies Helm chart
+        ↓
+K8s Deployment needs secrets → defined in Helm charts
+        ↓
+Istio VirtualService needs Service names → from Kubernetes Service
+        ↓
+Prometheus ServiceMonitor needs Service port name → http
+        ↓
+Grafana dashboards need Prometheus → Prom values.yaml
+```
+
+This is the entire chain.
+
+---
+
+# ⭐ If you want, I can generate:
+
+### ✔ A PDF “Dependency Map”
+
+### ✔ A draw.io diagram showing every connection
+
+### ✔ A **learning order checklist**
+
+### ✔ A **project walkthrough like a YouTube script**
+
+### ✔ A **brain map version of dependencies**
+
+Just say:
+👉 **“Give dependency PDF”**
+👉 **“Give dependency diagram”**
+👉 **“Give project checklist”**

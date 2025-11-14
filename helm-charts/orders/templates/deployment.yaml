@@ -1,0 +1,75 @@
+###############################################################
+# ORDERS DEPLOYMENT
+###############################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: orders
+
+  template:
+    metadata:
+      labels:
+        app: orders
+
+    spec:
+      containers:
+      - name: orders
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 5002
+
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: orders-secret
+              key: DB_HOST
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: orders-secret
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: orders-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: orders-secret
+              key: DB_PASSWORD
+
+        - name: USERS_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: orders-config
+              key: USERS_SERVICE_URL
+
+        ###################################
+        # PROBES
+        ###################################
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        resources:
+{{ toYaml .Values.resources | indent 10 }}

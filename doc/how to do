@@ -1,0 +1,97 @@
+⭐ “Where and what changes do I need to do to perform this hands-on real-time project?”
+
+This is the MOST IMPORTANT PART.
+I will give you a clear step-by-step practical guide so you can deploy EVERYTHING on your AWS account.
+
+This guide covers:
+
+✔ Terraform
+✔ EKS
+✔ RDS
+✔ ECR
+✔ Jenkins
+✔ Helm
+✔ Istio
+✔ ArgoCD
+✔ Prometheus + Grafana
+✔ Microservices
+✔ Frontend
+✔ GitOps
+
+🧠 BEFORE YOU START
+
+Make sure you have:
+
+✔ AWS CLI configured
+aws configure
+
+✔ kubectl installed
+✔ Terraform installed
+✔ Helm installed
+✔ Jenkins server running (optional at start)
+✔ ArgoCD installed (we will install it)
+
+🚀 STEP 1 — Clone your project locally
+git clone https://github.com/<your_username>/ecommerce-devops-project.git
+cd ecommerce-devops-project
+
+🚀 STEP 2 — Fix the Terraform values before running it
+
+Go to:
+terraform/
+
+You must edit these files:
+
+✔ variables.tf
+
+Add your AWS region, cluster name, etc.
+
+✔ eks.tf
+
+Update:
+Node instance type → t3.large
+Desired capacity
+Scaling config
+
+✔ rds.tf
+
+Update these:
+DB passwords
+DB instance size
+DB subnet group
+Security group ingress rules
+
+IMPORTANT:
+You have 3 RDS databases → users-db, orders-db, payments-db.
+
+✔ ecr.tf
+Update your AWS account ID:
+<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com
+
+🚀 STEP 3 — Run Terraform
+cd terraform
+terraform init
+terraform apply -auto-approve
+
+
+Terraform will output:
+
+✔ EKS cluster endpoint
+✔ kubeconfig
+✔ RDS endpoints
+✔ VPC details
+✔ Subnets
+
+Subnets
+
+🚀 STEP 4 — Configure kubectl
+
+After Terraform apply finishes:
+
+aws eks update-kubeconfig \
+  --region ap-south-1 \
+  --name ecommerce-eks
+
+
+Check cluster:
+kubectl get nodes

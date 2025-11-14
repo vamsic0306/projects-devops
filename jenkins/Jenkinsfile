@@ -1,0 +1,95 @@
+# jenkinsfile
+##############################################################
+# JENKINSFILE - CI/CD FOR MICROSERVICES + FRONTEND
+# Steps:
+# 1. Pull source code from GitHub
+# 2. Build Docker image
+# 3. Push to ECR
+# 4. Update Helm chart image tag
+# 5. Git commit + push
+# 6. ArgoCD auto sync → EKS deploy
+##############################################################
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = "ap-south-1"
+        ECR_URL = "<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com"
+        SERVICE = "${params.SERVICE}"
+    }
+
+    parameters {
+        choice(
+            name: 'SERVICE',
+            choices: ['users', 'orders', 'payments', 'frontend'],
+            description: 'Select which service to deploy'
+        )
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/<YOUR_GITHUB_USERNAME>/ecommerce-devops-project.git'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                sh """
+                aws ecr get-login-password --region $AWS_REGION \
+                | docker login --username AWS --password-stdin $ECR_URL
+                """
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh """
+                    docker build -t $ECR_URL/ecommerce-$SERVICE:latest -f services/$SERVICE/Dockerfile services/$SERVICE
+                    """
+                }
+            }
+        }
+
+        stage('Push Image to ECR') {
+            steps {
+                sh """
+                docker push $ECR_URL/ecommerce-$SERVICE:latest
+                """
+            }
+        }
+
+        stage('Update Helm chart') {
+            steps {
+                script {
+                    sh """
+                    sed -i 's/tag:.*/tag: "latest"/' helm-charts/$SERVICE/values.yaml
+                    """
+                }
+            }
+        }
+
+        stage('Git Commit & Push') {
+            steps {
+                sh """
+                git config --global user.email "jenkins@example.com"
+                git config --global user.name "Jenkins CI"
+
+                git add .
+                git commit -m "Updated $SERVICE image tag via Jenkins"
+                git push origin main
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful! ArgoCD will auto-sync."
+        }
+    }
+}
